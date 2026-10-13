@@ -1,4 +1,5 @@
 [core]
     remote = dagshub
+    autostage = true
 ['remote "dagshub"']
     url = https://dagshub.com/zeumar711/13MBID-ABR2627.dvc
