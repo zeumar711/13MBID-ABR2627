@@ -1,0 +1,9 @@
+# Imágenes generadas
+docs/figures/*.png
+
+# Entorno virtual
+.venv/
+
+# Archivos de Python
+__pycache__/
+*.pyc
