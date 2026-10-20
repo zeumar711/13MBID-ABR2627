@@ -1,0 +1,12 @@
+stages: 
+visualize_data:
+    cmd: python src/data_visualization.py
+    deps:
+      - src/data_visualization.py
+      - data/raw/clientes.csv
+      - data/raw/resenas.csv
+    outs:
+      - docs/figures/distribucion_sentimiento.png
+      - docs/figures/longitud_texto.png
+      - docs/figures/matriz_correlacion_clientes.png
+      - docs/figures/matriz_correlacion_resenas.png
