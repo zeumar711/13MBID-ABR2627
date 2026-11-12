@@ -10,7 +10,6 @@ stages:
     - docs/figures/longitud_texto.png
     - docs/figures/matriz_correlacion_clientes.png
     - docs/figures/matriz_correlacion_resenas.png
-    - docs/figures/Mapa_sentimiento_por_categoria_producto.png
     - docs/figures/calificacion_sentimiento.png
     - docs/figures/distribucion_categoria_producto.png
     
