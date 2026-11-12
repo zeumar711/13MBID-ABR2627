@@ -16,6 +16,14 @@ stages:
       md5: df5d566d0a7c18295c7f972dba749351
       size: 8826
     outs:
+    - path: docs/figures/calificacion_sentimiento.png
+      hash: md5
+      md5: 22ddfe6a99c5ee345ea0d0a9cef8fd21
+      size: 19936
+    - path: docs/figures/distribucion_categoria_producto.png
+      hash: md5
+      md5: 4b9f90c4b5394a24fafd03f6ae372e98
+      size: 28500
     - path: docs/figures/distribucion_sentimiento.png
       hash: md5
       md5: 4889fa0a52d8ab08fa6ef3167e9f8e89
