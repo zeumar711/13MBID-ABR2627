@@ -13,8 +13,8 @@ stages:
       size: 4465568
     - path: src/data_visualization.py
       hash: md5
-      md5: 78c30016b53c16cbb8ac8bd94450f691
-      size: 3300
+      md5: df5d566d0a7c18295c7f972dba749351
+      size: 8826
     outs:
     - path: docs/figures/distribucion_sentimiento.png
       hash: md5
