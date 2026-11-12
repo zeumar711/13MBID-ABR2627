@@ -19,8 +19,8 @@ def process_data(
         None
     """
     # lectura de los datos
-    df_clientes = pd.read_csv(".../ data/raw/datos_clientes.csv",sep=";")
-    df_resenas = pd.read_csv(".../ data/raw/datos_resenas.csv",sep=";")
+    df_clientes = pd.read_csv(datos_clientes,sep=";")
+    df_resenas = pd.read_csv(datos_resenas,sep=";")
    
    # Selección de los datos (filtro de columnas)
    # TODO: Agregar si corresponde otras acciones en función de la evaluación de calidad de los datos del paso previo.
