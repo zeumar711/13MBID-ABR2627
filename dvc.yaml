@@ -30,3 +30,4 @@ stages:
     - data/raw/datos_resenas.csv
     outs:
     - data/processed/datos_integrados.csv
+    - reports/reporte_transformaciones.txt

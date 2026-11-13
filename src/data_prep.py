@@ -1,11 +1,13 @@
 # Importación de librerías y supresión de advertencias
 import pandas as pd
 from pathlib import Path
+from datetime import datetime # Para el extra Reporte de transformaciones
 
 def process_data(
     datos_clientes: str= "data/raw/datos_clientes.csv",
     datos_resenas: str= "data/raw/datos_resenas.csv",
     output_dir: str= "data/processed",
+    report_dir: str= "docs"
 ) -> None:
     
     """
@@ -144,6 +146,111 @@ def process_data(
     # EXTRA: Generar un reporte de  las transformaciones aplicadas, por ejemplo:
     # Cantidad de filas iniciales y finales, cantidad de valores nulos por columna, cantidad de duplicados eliminados, etc.
     # Se puede exportar a un JSON o CSV o TEXT que sirva como registro de las transformaciones aplicadas a los datos.
+
+    # 10. EXTRA: Generar reporte detallado de transformaciones en formato .TXT
+    ruta_reporte_txt = Path(report_dir) / "reporte_transformaciones.txt"
+    fecha_ejecucion = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    clientes_mayores_90 = len(df_clientes) - len(
+        df_clientes[(df_clientes["edad"] < 90) | (df_clientes["edad"].isna())]
+    )
+    resenas_duplicadas_exactas = len(df_resenas) - len(
+        df_resenas.drop_duplicates()
+    )
+    registros_cumplen_reglas = int(df_final["cumple_reglas_negocio"].sum())
+    registros_incumplen_reglas = len(df_final) - registros_cumplen_reglas
+    registros_inconsistencia = int(df_final["inconsistencia_sentimiento"].sum())
+
+    lineas_reporte = [
+        "=" * 75,
+        "REPORTE DE PREPARACIÓN Y TRANSFORMACIÓN DE DATOS",
+        f"Fecha y hora de ejecución: {fecha_ejecucion}",
+        "=" * 75,
+        "",
+        "1. VOLUMETRÍA INICIAL Y DEPURACIÓN DE REGISTROS",
+        "-" * 75,
+        f"- Filas iniciales en clientes: {len(df_clientes)}",
+        (
+            "- Registros filtrados por edad >= 90 años en clientes:"
+            f" {clientes_mayores_90}"
+        ),
+        (
+            "- Llaves duplicadas eliminadas en clientes (id_cliente):"
+            f" {duplicados_clientes}"
+        ),
+        f"- Filas iniciales en reseñas: {len(df_resenas)}",
+        (
+            "- Filas exactas duplicadas eliminadas en reseñas:"
+            f" {resenas_duplicadas_exactas}"
+        ),
+        (
+            "- Llaves duplicadas eliminadas en reseñas (id_resena):"
+            f" {duplicados_resenas}"
+        ),
+        f"- Total filas tras integración (inner join): {len(df_integrado)}",
+        "",
+        "2. SELECCIÓN E INGENIERÍA DE ATRIBUTOS",
+        "-" * 75,
+        "- Columnas eliminadas en clientes: ['canal_registro']",
+        (
+            "- Columnas eliminadas en reseñas: ['fecha_resena',"
+            " 'reclamo_formal']"
+        ),
+        "- Columnas eliminadas post-integración: ['id_cliente', 'id_resena', 'calificacion']",
+        "- Imputaciones aplicadas: 'edad' (mediana por ciudad) y 'tiempo_respuesta_horas' (mediana por categoría)",
+        "- Nuevos atributos creados (7): longitud_resena, cantidad_palabras_resena, tiempo_respuesta_dias,",
+        "  cumple_reglas_negocio, inconsistencia_sentimiento, cantidad_resenas_cliente, promedio_calificacion_cliente",
+        "",
+        "3. AUDITORÍA DE REGLAS DE NEGOCIO (DATASET FINAL)",
+        "-" * 75,
+        (
+            "- Registros que cumplen las 3 reglas (edad >= 18, antigüedad >= 0,"
+            f" calif 1-5): {registros_cumplen_reglas}"
+            f" ({registros_cumplen_reglas / len(df_final) * 100:.2f}%)"
+        ),
+        (
+            "- Registros que incumplen alguna regla:"
+            f" {registros_incumplen_reglas}"
+            f" ({registros_incumplen_reglas / len(df_final) * 100:.2f}%)"
+        ),
+        (
+            "- Registros con inconsistencia (calificación < 3 y sentimiento"
+            f" 'Positivo'): {registros_inconsistencia}"
+            f" ({registros_inconsistencia / len(df_final) * 100:.2f}%)"
+        ),
+        "",
+        "4. ESTADO DEL DATASET FINAL INTEGRADO",
+        "-" * 75,
+        (
+            f"- Dimensiones finales: {df_final.shape[0]} filas x"
+            f" {df_final.shape[1]} columnas"
+        ),
+        f"- Filas duplicadas exactas en el dataset final: {num_duplicados}",
+        f"- Archivo exportado en: {output_dir}/datos_integrados.csv",
+        "",
+        "5. VALORES NULOS POR COLUMNA EN EL DATASET FINAL",
+        "-" * 75,
+        *[
+            (
+                f"  * {col:<32}: {df_final[col].isna().sum()} nulos"
+                f" ({df_final[col].isna().sum() / len(df_final) * 100:.2f}%)"
+            )
+            for col in df_final.columns
+        ],
+        "",
+        "=" * 75,
+        "FIN DEL REPORTE DE TRANSFORMACIONES",
+        "=" * 75,
+    ]
+
+    with open(ruta_reporte_txt, "w", encoding="utf-8") as archivo:
+        archivo.write("\n".join(lineas_reporte))
+
+    print(
+        f"\nReporte de transformaciones generado exitosamente en:"
+        f" {ruta_reporte_txt}"
+    )
+
 
 if __name__ == "__main__":
     process_data()

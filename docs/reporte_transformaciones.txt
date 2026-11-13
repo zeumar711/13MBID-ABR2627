@@ -1,0 +1,61 @@
+===========================================================================
+REPORTE DE PREPARACIÓN Y TRANSFORMACIÓN DE DATOS
+Fecha y hora de ejecución: 2026-11-12 19:27:38
+===========================================================================
+
+1. VOLUMETRÍA INICIAL Y DEPURACIÓN DE REGISTROS
+---------------------------------------------------------------------------
+- Filas iniciales en clientes: 10400
+- Registros filtrados por edad >= 90 años en clientes: 28
+- Llaves duplicadas eliminadas en clientes (id_cliente): 0
+- Filas iniciales en reseñas: 25063
+- Filas exactas duplicadas eliminadas en reseñas: 63
+- Llaves duplicadas eliminadas en reseñas (id_resena): 0
+- Total filas tras integración (inner join): 24934
+
+2. SELECCIÓN E INGENIERÍA DE ATRIBUTOS
+---------------------------------------------------------------------------
+- Columnas eliminadas en clientes: ['canal_registro']
+- Columnas eliminadas en reseñas: ['fecha_resena', 'reclamo_formal']
+- Columnas eliminadas post-integración: ['id_cliente', 'id_resena', 'calificacion']
+- Imputaciones aplicadas: 'edad' (mediana por ciudad) y 'tiempo_respuesta_horas' (mediana por categoría)
+- Nuevos atributos creados (7): longitud_resena, cantidad_palabras_resena, tiempo_respuesta_dias,
+  cumple_reglas_negocio, inconsistencia_sentimiento, cantidad_resenas_cliente, promedio_calificacion_cliente
+
+3. AUDITORÍA DE REGLAS DE NEGOCIO (DATASET FINAL)
+---------------------------------------------------------------------------
+- Registros que cumplen las 3 reglas (edad >= 18, antigüedad >= 0, calif 1-5): 24934 (100.00%)
+- Registros que incumplen alguna regla: 0 (0.00%)
+- Registros con inconsistencia (calificación < 3 y sentimiento 'Positivo'): 54 (0.22%)
+
+4. ESTADO DEL DATASET FINAL INTEGRADO
+---------------------------------------------------------------------------
+- Dimensiones finales: 24934 filas x 19 columnas
+- Filas duplicadas exactas en el dataset final: 0
+- Archivo exportado en: data/processed/datos_integrados.csv
+
+5. VALORES NULOS POR COLUMNA EN EL DATASET FINAL
+---------------------------------------------------------------------------
+  * categoria_producto              : 0 nulos (0.00%)
+  * canal_compra                    : 0 nulos (0.00%)
+  * plataforma                      : 0 nulos (0.00%)
+  * texto_resena                    : 0 nulos (0.00%)
+  * tiempo_respuesta_horas          : 0 nulos (0.00%)
+  * problema_resuelto               : 0 nulos (0.00%)
+  * importe_compra                  : 0 nulos (0.00%)
+  * sentimiento                     : 0 nulos (0.00%)
+  * edad                            : 0 nulos (0.00%)
+  * genero                          : 0 nulos (0.00%)
+  * ciudad                          : 0 nulos (0.00%)
+  * antiguedad_cliente_meses        : 0 nulos (0.00%)
+  * longitud_resena                 : 0 nulos (0.00%)
+  * cantidad_palabras_resena        : 0 nulos (0.00%)
+  * tiempo_respuesta_dias           : 0 nulos (0.00%)
+  * cumple_reglas_negocio           : 0 nulos (0.00%)
+  * inconsistencia_sentimiento      : 0 nulos (0.00%)
+  * cantidad_resenas_cliente        : 0 nulos (0.00%)
+  * promedio_calificacion_cliente   : 0 nulos (0.00%)
+
+===========================================================================
+FIN DEL REPORTE DE TRANSFORMACIONES
+===========================================================================
