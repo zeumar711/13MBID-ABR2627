@@ -200,11 +200,22 @@ def train_model(
 
             mlflow.log_metrics(metrics)
             mlflow.log_artifact(cm_fig_path, artifact_path="figures")
-            mlflow.sklearn.log_model(pipeline, name="model",
-                signature=signature, input_example=X_train.head(3))
+            model_info = mlflow.sklearn.log_model(pipeline, name="model",
+                signature=signature, input_example=X_train.head(3), registered_model_name=registered_model_name,)
 
             run_id = mlflow.active_run().info.run_id
             print(f"Modelo registrado en MLFlow a raíz del run ID:{run_id}")
+
+        if registered_model_name:
+            version = model_info.registered_model_version
+            if metrics["test_accuracy"] >= UMBRAL_ACCURACY:
+                mlflow.MlflowClient().set_registered_model_alias(
+                    name=registered_model_name, version=version, alias=ALIAS_PRODUCCION
+                )
+                print(f"Modelo registrado como '{registered_model_name}' con alias '{ALIAS_PRODUCCION}'")
+            else:
+                print(f"Modelo no cumple con el umbral de accuracy ({UMBRAL_ACCURACY}). No se registra como '{ALIAS_PRODUCCION}'.")
+
 
         Path(model_output_path).parent.mkdir(parents=True, exist_ok=True)
         Path(preprocessor_output_path).parent.mkdir(parents=True, exist_ok=True)
