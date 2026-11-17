@@ -41,6 +41,10 @@ from sklearn.metrics import (
 warnings.filterwarnings('ignore',category=FutureWarning)
 warnings.filterwarnings('ignore',category=UserWarning)
 
+REGISTERED_MODEL_NAME = "sentimiento-resenas"
+ALIAS_PRODUCCION = "champion"
+UMBRAL_ACCURACY = 0.8
+
 def load_data(data_path: str = "data/processed/datos_integrados.csv"):
     """
     Carga los datos desde un archivo CSV y devuelve un DataFrame de pandas.
@@ -116,6 +120,7 @@ def train_model(
     preprocessor_output_path: str = "models/preprocessor.pkl",
     metrics_output_path: str = "models/train_metrics.json",
     figures_output_path: str = "docs/figures",
+    registered_model_name: str | None = REGISTERED_MODEL_NAME,
 ):
 
         """

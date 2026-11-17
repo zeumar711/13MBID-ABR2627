@@ -3,6 +3,104 @@ import pandas as pd
 from pathlib import Path
 from datetime import datetime # Para el extra Reporte de transformaciones
 
+
+def create_attributes(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Crea atributos adicionales en el DataFrame de entrada.
+
+    Args:
+        df (pd.DataFrame): DataFrame de entrada con los datos originales.
+
+    Returns:
+        pd.DataFrame: DataFrame con los atributos adicionales.
+    """
+    # Creación de atributos nuevos
+    
+    # Longitud del texto de la reseña, en caracteres
+    df["longitud_resena"] = df["texto_resena"].str.len()
+
+    # Cantidad de palabras del texto de la reseña
+    df["cantidad_palabras_resena"] = df["texto_resena"].str.split().apply(len)
+
+    # Tiempo de respuesta expresado en días, más interpretable que en horas
+    df["tiempo_respuesta_dias"] = df["tiempo_respuesta_horas"] / 24
+
+    # Se creó un campo que incluya la validación de 3 reglas de negocio.
+    # # 1. Definimos cada condición por separado para mayor claridad y mantenimiento
+    condicion_mayor_edad = (df['edad'] >= 18) | (df['edad'].isna())  # Permite nulos sin falso positivo
+    condicion_antiguedad = df['antiguedad_cliente_meses'] >= 0             # Antigüedad mayor o igual a 0
+    condicion_calificacion = df['calificacion'].between(1, 5)              # Rango inclusivo entre 1 y 5
+
+    # 2. Creamos la columna booleana (True = Cumple todas las reglas / False = Incumple alguna)
+    df['cumple_reglas_negocio'] = (
+        condicion_mayor_edad & 
+        condicion_antiguedad & 
+        condicion_calificacion
+)
+    df['cumple_reglas_negocio'] = df['cumple_reglas_negocio'].astype(int)
+
+    # Se creo un campo que incluya otra regla de negocio. 
+    # Crea la columna booleana: True si incumple la regla (calificación < 3 y sentimiento 'Positivo')
+    # Solo se calcula cuando existe la columna sentimiento
+   
+  
+    if {"calificacion", "sentimiento"}.issubset(df.columns):
+    
+        df["inconsistencia_sentimiento"] = ((df["calificacion"] < 3)
+        & (df["sentimiento"] == "Positivo")).astype(int)
+    
+    # TODO: Otros atributos que pueden generarse, (implementar dos al menos)
+    # por ejemplo:
+    # - Cantidad de reseñas por cliente
+    # - Promedio de calificación por cliente
+    
+    # 1. Cantidad total de reseñas por cada cliente
+    if {"id_cliente", "id_resena"}.issubset(df.columns):
+        df['cantidad_resenas_cliente'] = (df.groupby('id_cliente')['id_resena'].transform('count'))
+
+    # 2. Promedio de calificación histórica por cada cliente
+    if {"id_cliente", "calificacion"}.issubset(df.columns):
+        df['promedio_calificacion_cliente'] = (df.groupby('id_cliente')['calificacion'].transform('mean'))
+    # Con todo lo anterior, hice ingeniería de variables avanzada para el dataset histórico.
+    return df
+
+
+# Realizo esta segunda creación de atributos para re entrenar el modelo
+def create_attributes_inference(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Transformaciones disponibles en producción.
+    """
+
+    df["longitud_resena"] = (
+        df["texto_resena"].str.len()
+    )
+
+    df["cantidad_palabras_resena"] = (
+        df["texto_resena"]
+          .str.split()
+          .apply(len)
+    )
+
+    df["tiempo_respuesta_dias"] = (
+        df["tiempo_respuesta_horas"] / 24
+    )
+
+    condicion_mayor_edad = (
+        (df["edad"] >= 18)
+        | df["edad"].isna()
+    )
+
+    condicion_antiguedad = (
+        df["antiguedad_cliente_meses"] >= 0
+    )
+
+    df["cumple_reglas_negocio"] = (
+        condicion_mayor_edad
+        & condicion_antiguedad
+    ).astype(int)
+
+    return df
+
 def process_data(
     datos_clientes: str= "data/raw/datos_clientes.csv",
     datos_resenas: str= "data/raw/datos_resenas.csv",
@@ -71,48 +169,11 @@ def process_data(
         on='id_cliente', 
         how='inner')
 
-    # Creación de atributos nuevos
-
-    # Longitud del texto de la reseña, en caracteres
-    df_integrado["longitud_resena"] = df_integrado["texto_resena"].str.len()
-
-    # Cantidad de palabras del texto de la reseña
-    df_integrado["cantidad_palabras_resena"] = df_integrado["texto_resena"].str.split().apply(len)
-
-    # Tiempo de respuesta expresado en días, más interpretable que en horas
-    df_integrado["tiempo_respuesta_dias"] = df_integrado["tiempo_respuesta_horas"] / 24
-
-    # Se creó un campo que incluya la validación de 3 reglas de negocio.
-    # # 1. Definimos cada condición por separado para mayor claridad y mantenimiento
-    condicion_mayor_edad = (df_integrado['edad'] >= 18) | (df_integrado['edad'].isna())  # Permite nulos sin falso positivo
-    condicion_antiguedad = df_integrado['antiguedad_cliente_meses'] >= 0             # Antigüedad mayor o igual a 0
-    condicion_calificacion = df_integrado['calificacion'].between(1, 5)              # Rango inclusivo entre 1 y 5
-
-    # 2. Creamos la columna booleana (True = Cumple todas las reglas / False = Incumple alguna)
-    df_integrado['cumple_reglas_negocio'] = (
-        condicion_mayor_edad & 
-        condicion_antiguedad & 
-        condicion_calificacion
-)
-    df_integrado['cumple_reglas_negocio'] = df_integrado['cumple_reglas_negocio'].astype(int)
-
-    # Se creo un campo que incluya otra regla de negocio. 
-    # Crea la columna booleana: True si incumple la regla (calificación < 3 y sentimiento 'Positivo')
-    df_integrado["inconsistencia_sentimiento"] = (
-    df_integrado["calificacion"] < 3
-) & (df_integrado["sentimiento"] == "Positivo").astype(int)
-
-    # TODO: Otros atributos que pueden generarse, (implementar dos al menos)
-    # por ejemplo:
-    # - Cantidad de reseñas por cliente
-    # - Promedio de calificación por cliente
+    # Crear atributos históricos para análisis y reporte
+    df_integrado = create_attributes(df_integrado)
+    print("\nCOLUMNAS DEL DATASET INTEGRADO:")
+    print(sorted(df_integrado.columns.tolist()))
     
-    # 1. Cantidad total de reseñas por cada cliente
-    df_integrado['cantidad_resenas_cliente'] = df_integrado.groupby('id_cliente')['id_resena'].transform('count')
-
-    # 2. Promedio de calificación histórica por cada cliente
-    df_integrado['promedio_calificacion_cliente'] = df_integrado.groupby('id_cliente')['calificacion'].transform('mean')
-
     # Fomateo de los datos
 
     # Se eliminan columnas identificadoras, la fecha (no se utiliza en esta etapa)
@@ -121,8 +182,11 @@ def process_data(
     "id_cliente",
     "id_resena",
     "calificacion",
+    "cantidad_resenas_cliente",
+    "promedio_calificacion_cliente",
+    "inconsistencia_sentimiento"
 ]
-    df_final = df_integrado.drop(columns=columnas_a_eliminar)
+    df_final = df_integrado.drop(columns=columnas_a_eliminar, errors="ignore")
 
     # Generar el csv de salida
 
@@ -157,9 +221,21 @@ def process_data(
     resenas_duplicadas_exactas = len(df_resenas) - len(
         df_resenas.drop_duplicates()
     )
-    registros_cumplen_reglas = int(df_final["cumple_reglas_negocio"].sum())
-    registros_incumplen_reglas = len(df_final) - registros_cumplen_reglas
-    registros_inconsistencia = int(df_final["inconsistencia_sentimiento"].sum())
+    registros_cumplen_reglas = (
+    int(df_integrado["cumple_reglas_negocio"].sum())
+    if "cumple_reglas_negocio" in df_integrado.columns
+    else 0
+    )
+
+    registros_incumplen_reglas = (
+        len(df_integrado) - registros_cumplen_reglas
+    )
+
+    registros_inconsistencia = (
+        int(df_integrado["inconsistencia_sentimiento"].sum())
+        if "inconsistencia_sentimiento" in df_integrado.columns
+        else 0
+    )
 
     lineas_reporte = [
         "=" * 75,
@@ -206,24 +282,24 @@ def process_data(
         (
             "- Registros que cumplen las 3 reglas (edad >= 18, antigüedad >= 0,"
             f" calif 1-5): {registros_cumplen_reglas}"
-            f" ({registros_cumplen_reglas / len(df_final) * 100:.2f}%)"
+            f" ({registros_cumplen_reglas / len(df_integrado) * 100:.2f}%)"
         ),
         (
             "- Registros que incumplen alguna regla:"
             f" {registros_incumplen_reglas}"
-            f" ({registros_incumplen_reglas / len(df_final) * 100:.2f}%)"
+            f" ({registros_incumplen_reglas / len(df_integrado) * 100:.2f}%)"
         ),
         (
             "- Registros con inconsistencia (calificación < 3 y sentimiento"
             f" 'Positivo'): {registros_inconsistencia}"
-            f" ({registros_inconsistencia / len(df_final) * 100:.2f}%)"
+            f" ({registros_inconsistencia / len(df_integrado) * 100:.2f}%)"
         ),
         "",
         "4. ESTADO DEL DATASET FINAL INTEGRADO",
         "-" * 75,
         (
-            f"- Dimensiones finales: {df_final.shape[0]} filas x"
-            f" {df_final.shape[1]} columnas"
+            f"- Dimensiones finales: {df_integrado.shape[0]} filas x"
+            f" {df_integrado.shape[1]} columnas"
         ),
         f"- Filas duplicadas exactas en el dataset final: {num_duplicados}",
         f"- Archivo exportado en: {output_dir}/datos_integrados.csv",
@@ -232,10 +308,10 @@ def process_data(
         "-" * 75,
         *[
             (
-                f"  * {col:<32}: {df_final[col].isna().sum()} nulos"
-                f" ({df_final[col].isna().sum() / len(df_final) * 100:.2f}%)"
+                f"  * {col:<32}: {df_integrado[col].isna().sum()} nulos"
+                f" ({df_integrado[col].isna().sum() / len(df_final) * 100:.2f}%)"
             )
-            for col in df_final.columns
+            for col in df_integrado.columns
         ],
         "",
         "=" * 75,

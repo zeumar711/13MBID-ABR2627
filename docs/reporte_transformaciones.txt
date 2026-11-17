@@ -1,6 +1,6 @@
 ===========================================================================
 REPORTE DE PREPARACIÓN Y TRANSFORMACIÓN DE DATOS
-Fecha y hora de ejecución: 2026-11-12 19:27:38
+Fecha y hora de ejecución: 2026-11-16 20:29:37
 ===========================================================================
 
 1. VOLUMETRÍA INICIAL Y DEPURACIÓN DE REGISTROS
@@ -30,15 +30,18 @@ Fecha y hora de ejecución: 2026-11-12 19:27:38
 
 4. ESTADO DEL DATASET FINAL INTEGRADO
 ---------------------------------------------------------------------------
-- Dimensiones finales: 24934 filas x 19 columnas
+- Dimensiones finales: 24934 filas x 22 columnas
 - Filas duplicadas exactas en el dataset final: 0
 - Archivo exportado en: data/processed/datos_integrados.csv
 
 5. VALORES NULOS POR COLUMNA EN EL DATASET FINAL
 ---------------------------------------------------------------------------
+  * id_resena                       : 0 nulos (0.00%)
+  * id_cliente                      : 0 nulos (0.00%)
   * categoria_producto              : 0 nulos (0.00%)
   * canal_compra                    : 0 nulos (0.00%)
   * plataforma                      : 0 nulos (0.00%)
+  * calificacion                    : 0 nulos (0.00%)
   * texto_resena                    : 0 nulos (0.00%)
   * tiempo_respuesta_horas          : 0 nulos (0.00%)
   * problema_resuelto               : 0 nulos (0.00%)
