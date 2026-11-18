@@ -15,7 +15,7 @@ COLORES = {"Positivo": "🟢", "Neutral": "🟡", "Negativo": "🔴"}
 st.set_page_config(page_title="Sentimientos en reseñas", layout="wide")
 st.title("Clasificación de Sentimientos en Reseñas de Productos")
 # TODO: completar nombres de los autores del trabajo
-st.caption("[autor/es] - Proyecto 13MBID - Ingrese los datos de la reseña y obtenga la predicción del sentimiento.")
+st.caption("[Zeudy Carroll Martinez Del Vecchio - Proyecto 13MBID - Ingrese los datos de la reseña y obtenga la predicción del sentimiento.")
 
 
 @st.cache_data(ttl=300)
@@ -106,4 +106,7 @@ if enviar:
 #######################################################################
 # TODO: Agregar los valores o campos que sea necesarios para el cálculo 
 # de otros atributos, en caso de corresponder.
+
+#  Los atributos derivados utilizados por el modelo son calculados automáticamente en la API mediante create_attributes_inference(),
+# por lo que no es necesario solicitar campos adicionales al usuario.
 #######################################################################
