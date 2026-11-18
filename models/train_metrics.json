@@ -1,8 +1,8 @@
 {
-  "test_accuracy": 0.8580593424218124,
-  "test_precision_macro": 0.8113602215373642,
-  "test_recall_macro": 0.8233977165013293,
-  "test_f1_macro": 0.8165561794881061,
-  "test_recall_negative": 0.8233977165013293,
-  "test_roc_aux_ovr": 0.9391060093575394
+  "test_accuracy": 0.7137129109863672,
+  "test_precision_macro": 0.6303813878824103,
+  "test_recall_macro": 0.553238989260917,
+  "test_f1_macro": 0.5762610857466465,
+  "test_recall_negative": 0.553238989260917,
+  "test_roc_aux_ovr": 0.7713320963539315
 }

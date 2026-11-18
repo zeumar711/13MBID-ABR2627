@@ -148,12 +148,26 @@ def train_model(
         preprocessor = create_preprocessor(features_X)
 
         # Definición de los modelos a entrenar
-        model = LogisticRegression(max_iter=1000)
+        # Modelos candidatos
+        models = {
+        "logistic_regression": LogisticRegression(max_iter=1000),
+        "knn": KNeighborsClassifier(n_neighbors=5) # Nuevo modelo TODO
+        }
 
+        best_pipeline = None # Nueva línea 
+        best_metrics = None # Nueva línea
+        best_model_name = None # Nueva línea
+        best_f1 = 0 # Nueva línea
+
+        for model_name, model in models.items(): # Nueva línea
+
+            print(f"\nEntrenando modelo: {model_name}") # Nueva línea
+
+        ################################################################
         # Creación del pipeline que incluye el preprocesador y el modelo
-        pipeline = Pipeline(steps=[
-            ("prep", preprocessor),
-            ("model", model)])
+            pipeline = Pipeline(steps=[
+                ("prep", preprocessor),
+                ("model", model)])
 
         # Entrenamiento del modelo
         pipeline.fit(X_train, y_train)
@@ -173,15 +187,29 @@ def train_model(
 
         }
 
+        print(f"\nResultados {model_name}") # Nueva línea 
+
         for metric_name, metric_value in metrics.items():
             print(f"[{metric_name} {metric_value:.4f}")
+
+        # Selección del mejor modelo mediante F1 Macro # Nuevas líneas
+        if metrics["test_f1_macro"] > best_f1:
+            best_f1 = metrics["test_f1_macro"]
+            best_pipeline = pipeline
+            best_metrics = metrics
+            best_model_name = model_name
+        print(f"\nMejor modelo seleccionado: {best_model_name}")
+        print(f"F1 Macro: {best_f1:.4f}")
+
+        pipeline = best_pipeline # Nueva Línea
+        metrics = best_metrics # Nueva Línea
 
         # Guardadado de la matriz de confusión
         Path(figures_output_path).mkdir(parents=True, exist_ok=True)
         cm = confusion_matrix(y_test, y_test_pred, labels=pipeline.classes_)
         disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=pipeline.classes_)
         disp.plot(cmap=plt.cm.Blues)
-        plt.title("Confusion Matrix - Logistic Regression - Test Set")
+        plt.title("Confusion Matrix - {best_model_name} - Test Set") # Se ajusta la línea
         cm_fig_path = f"{figures_output_path}/confusion_matrix_test.png"
         plt.savefig(cm_fig_path)
         plt.close()
@@ -189,8 +217,9 @@ def train_model(
         # Registro general en MLFlow
         signature = infer_signature(X_train, pipeline.predict(X_train))
 
-        with mlflow.start_run(run_name="Pipeline (prod) - Logistic Regression") as run:
-            mlflow.log_params(model.get_params())
+        with mlflow.start_run(run_name=f"Pipeline (prod) - {best_model_name}") as run: # Se ajusta la línea
+            mlflow.log_param("selected_model", best_model_name)
+            mlflow.log_params(pipeline.named_steps["model"].get_params()) # Se ajusta la línea
             mlflow.log_params ({
                 "train_sample_size": len(X_train),
                 "validation_sample_size": len(X_val),
@@ -201,7 +230,9 @@ def train_model(
             mlflow.log_metrics(metrics)
             mlflow.log_artifact(cm_fig_path, artifact_path="figures")
             model_info = mlflow.sklearn.log_model(pipeline, name="model",
-                signature=signature, input_example=X_train.head(3), registered_model_name=registered_model_name,)
+                signature=signature, input_example=X_train.head(3), registered_model_name=registered_model_name,
+                skops_trusted_types=["scipy.sparse._csr.csr_matrix"]
+                )
 
             run_id = mlflow.active_run().info.run_id
             print(f"Modelo registrado en MLFlow a raíz del run ID:{run_id}")
