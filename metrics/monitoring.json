@@ -1,0 +1,19 @@
+{
+  "lote": "data/raw/resenas_nuevas_drift.csv",
+  "metricas": {
+    "cantidad_resenas": 1000,
+    "psi_tiempo_respuesta_horas": 0.5106,
+    "psi_importe_compra": 0.0083,
+    "proporcion_predicha_positivo": 0.526,
+    "proporcion_predicha_negativo": 0.312,
+    "proporcion_predicha_neutral": 0.162,
+    "accuracy": 0.861,
+    "f1_macro": 0.8053,
+    "recall_negativo": 0.9437
+  },
+  "alertas": [
+    "Drift en 'tiempo_respuesta_horas': PSI = 0.511 (umbral 0.2)",
+    "Cambio en la proporción de 'Positivo': 64.5% -> 52.6%",
+    "Cambio en la proporción de 'Negativo': 17.9% -> 31.2%"
+  ]
+}
