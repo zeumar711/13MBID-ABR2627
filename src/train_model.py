@@ -151,7 +151,7 @@ def train_model(
         # Modelos candidatos
         models = {
         "logistic_regression": LogisticRegression(max_iter=1000),
-        "knn": KNeighborsClassifier(n_neighbors=5) # Nuevo modelo TODO
+        "knn": KNeighborsClassifier(n_neighbors=5, weights="distance", metric="euclidean") # Nuevo modelo TODO
         }
 
         best_pipeline = None # Nueva línea 
